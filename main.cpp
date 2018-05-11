@@ -6,10 +6,20 @@
 #include <algorithm>
 #include <numeric>
 #include <ctime>
+#include <queue>
 
 using namespace std;
 
-void input(string input_name, int TOTAL_MEM) {
+struct HeapNode {
+    string sentence;
+    int index;
+    HeapNode(string a, int b): sentence(a), index(b) {}
+    bool operator<(const HeapNode& rhs) const {
+        return (sentence.compare(rhs.sentence) > 0);
+    }
+};
+
+int input(string input_name, int TOTAL_MEM) {
     ifstream input; 
     input.open(input_name.c_str());
 
@@ -73,10 +83,44 @@ void input(string input_name, int TOTAL_MEM) {
         output << data[data_size-1];
         output.close();
     }
+
+    return runs_count;
 }
 
-void merge() {
-    
+void merge(int runs_count, string output_name) {
+    ifstream input[runs_count];
+    for (int i = 0; i < runs_count; i++) {
+        stringstream ss;
+        ss << "run_" << i+1 << ".txt";
+        input[i].open(ss.str());
+    }
+
+    priority_queue<HeapNode, vector<HeapNode> > heap;
+
+    ofstream output;
+    output.open(output_name.c_str());
+
+    for (int i = 0; i < runs_count; i++) {
+        string sentence;
+        getline(input[i], sentence);
+        heap.push(HeapNode(sentence, i));
+    }
+
+    while (!heap.empty()) {
+        string sentence = heap.top().sentence; 
+        int index = heap.top().index;
+        heap.pop();
+
+        cout << sentence << ' ' << index << endl;
+        output << sentence << endl;
+        
+        if (!input[index].eof()) {
+            getline(input[index], sentence);
+            heap.push(HeapNode(sentence, index));
+        }
+    }
+
+    output.close();
 }
 
 int main(int argc, char* argv[]) {
@@ -89,6 +133,8 @@ int main(int argc, char* argv[]) {
     string output_name = argv[2];
     int TOTAL_MEM = strtol(argv[3], nullptr, 0);
     
-    input(input_name, TOTAL_MEM);
+    int runs_count = input(input_name, TOTAL_MEM);
+
+    merge(runs_count, output_name);
     return 0;
 }
