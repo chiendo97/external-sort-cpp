@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -9,6 +10,8 @@
 #include <queue>
 
 using namespace std;
+
+const clock_t begin_time = clock();
 
 struct HeapNode {
     string sentence;
@@ -29,15 +32,13 @@ int input(string input_name, int TOTAL_MEM) {
     input.seekg(0, input.beg);
     cout << "The size of the file chosen is (in bytes): " << input_size << endl;
 
-    int runs_count;
-    runs_count = input_size / TOTAL_MEM + 1;
-    cout << "runs_count: " << runs_count << endl;
-
     int run_count = 0;
     int total_mem_so_far = 0;
 
     ofstream output;
     vector<string> data;
+
+    cout << "File " << input_name << " is being read!" << endl;
 
     while (!input.eof()) {
         string sentence;
@@ -51,6 +52,8 @@ int input(string input_name, int TOTAL_MEM) {
             run_count++;
             stringstream ss;
             ss << "run_" << run_count << ".txt";
+            cout << "Writing " << ss.str() << endl;
+            // cout << "Entire process so far took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
             output.open(ss.str());
 
             int data_size = data.size();
@@ -73,6 +76,8 @@ int input(string input_name, int TOTAL_MEM) {
         run_count++;
         stringstream ss;
         ss << "run_" << run_count << ".txt";
+        cout << "Writing " << ss.str() << endl;
+        // cout << "Entire process so far took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
         output.open(ss.str());
 
         int data_size = data.size();
@@ -84,12 +89,15 @@ int input(string input_name, int TOTAL_MEM) {
         output.close();
     }
 
-    return runs_count;
+    cout << "Entire process so far took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
+    cout << "Read input is done!" << endl;
+    return run_count;
 }
 
 void merge(int runs_count, string output_name) {
     ifstream input[runs_count];
     for (int i = 0; i < runs_count; i++) {
+    // for (int i = runs_count - 1; i >= 0; i--) {
         stringstream ss;
         ss << "run_" << i+1 << ".txt";
         input[i].open(ss.str());
@@ -102,16 +110,23 @@ void merge(int runs_count, string output_name) {
 
     for (int i = 0; i < runs_count; i++) {
         string sentence;
-        getline(input[i], sentence);
-        heap.push(HeapNode(sentence, i));
+        if (!input[i].eof()) {
+            getline(input[i], sentence);
+            // if (sentence.length() == 0) {
+            //     cout << "Making heap: " << i << ' ' << sentence << endl;
+            // }
+            heap.push(HeapNode(sentence, i));
+        }
     }
+
+    cout << "Start merging!" << endl;
 
     while (!heap.empty()) {
         string sentence = heap.top().sentence; 
         int index = heap.top().index;
         heap.pop();
 
-        cout << sentence << ' ' << index << endl;
+        // cout << sentence << ' ' << index << ' ' << sentence.length() << endl;
         output << sentence << endl;
         
         if (!input[index].eof()) {
@@ -119,6 +134,8 @@ void merge(int runs_count, string output_name) {
             heap.push(HeapNode(sentence, index));
         }
     }
+
+    cout << "Merging stoped!" << endl;
 
     output.close();
 }
@@ -136,5 +153,14 @@ int main(int argc, char* argv[]) {
     int runs_count = input(input_name, TOTAL_MEM);
 
     merge(runs_count, output_name);
+
+    for (int i = 1; i <= runs_count; i++) {
+        stringstream ss;
+        ss << "run_" << i << ".txt";
+        cout << "Removing " << ss.str() << endl;
+        remove(ss.str().c_str());
+    }
+
+    cout << "Entire process took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
     return 0;
 }

@@ -10,12 +10,14 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-    if (argc < 3) {
+
+    if (argc != 3) {
         return 0;
     }
 
     string file_name = argv[1];
     int file_size = strtol(argv[2], nullptr, 0);
+    int size_each_sentence = file_size / 1000;
 
     ofstream output;
     output.open(file_name.c_str());
@@ -25,9 +27,9 @@ int main(int argc, char* argv[]) {
     char letter;
 
     while (total_size_so_far < file_size) {
-        sentence_size = 1 + rand() % 20;
+        sentence_size = 1 + rand() % size_each_sentence;
         while (total_size_so_far + sentence_size > file_size) {
-            sentence_size = 1 + rand() % 20;
+            sentence_size = 1 + rand() % size_each_sentence;
         }
         for (int i = 0; i < sentence_size; i++) {
             letter = 'a' + rand() % 26;
