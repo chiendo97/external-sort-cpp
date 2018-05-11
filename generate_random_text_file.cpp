@@ -25,9 +25,9 @@ int main(int argc, char* argv[]) {
     char letter;
 
     while (total_size_so_far < file_size) {
-        sentence_size = 1 + rand() % 2000;
+        sentence_size = 1 + rand() % 20;
         while (total_size_so_far + sentence_size > file_size) {
-            sentence_size = 1 + rand() % 2000;
+            sentence_size = 1 + rand() % 20;
         }
         for (int i = 0; i < sentence_size; i++) {
             letter = 'a' + rand() % 26;
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
         total_size_so_far += sentence_size;
         if (total_size_so_far + 1 < file_size) {
-            output << ' ';
+            output << endl;
             total_size_so_far ++;
         }
     }
