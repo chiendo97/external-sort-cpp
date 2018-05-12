@@ -70,6 +70,8 @@ int input(string input_name, int TOTAL_MEM) {
         }
     }
 
+    
+
     if (data.size() > 0) {
         sort(data.begin(), data.end());
 
@@ -85,6 +87,7 @@ int input(string input_name, int TOTAL_MEM) {
             output << data[i];
             output << endl;
         }
+        input.close();
         output << data[data_size-1];
         output.close();
     }
@@ -94,24 +97,29 @@ int input(string input_name, int TOTAL_MEM) {
     return run_count;
 }
 
-void merge(int runs_count, string output_name) {
+void merge(int start, int end, int location) {
+
+    int runs_count = end - start + 1;
+
     ifstream input[runs_count];
     for (int i = 0; i < runs_count; i++) {
-    // for (int i = runs_count - 1; i >= 0; i--) {
         stringstream ss;
-        ss << "run_" << i+1 << ".txt";
+        ss << "run_" << start + i << ".txt";
         input[i].open(ss.str());
     }
 
     priority_queue<HeapNode, vector<HeapNode> > heap;
 
     ofstream output;
-    output.open(output_name.c_str());
+    stringstream ss;
+    ss << "run_" << location << ".txt";
+    output.open(ss.str());
 
     for (int i = 0; i < runs_count; i++) {
         string sentence;
         if (!input[i].eof()) {
             getline(input[i], sentence);
+            // cout << sentence << ' ' << i << ' ' << sentence.length() << endl;
             // if (sentence.length() == 0) {
             //     cout << "Making heap: " << i << ' ' << sentence << endl;
             // }
@@ -119,7 +127,7 @@ void merge(int runs_count, string output_name) {
         }
     }
 
-    cout << "Start merging!" << endl;
+    cout << endl << "Starting merge from " << start << " to " << end << " into " << location << endl;
 
     while (!heap.empty()) {
         string sentence = heap.top().sentence; 
@@ -135,9 +143,42 @@ void merge(int runs_count, string output_name) {
         }
     }
 
-    cout << "Merging stoped!" << endl;
+    cout << "Merging stoped!" << endl << endl;
+
+    for (int i = 0; i < runs_count; i++) {
+        input[i].close();
+    }
 
     output.close();
+}
+
+void merge(int runs_count, string output_name) {
+    const int distance = 100;
+    int start = 1;
+    int end = runs_count;
+    while (start < end) {
+        int location = end;
+        while (start <= end) {
+            int mid = min(start + distance, end);
+            location++;
+            merge(start, mid, location);
+            start = mid + 1;
+        }
+        end = location;
+    }
+
+    // cout << start << ' ' << end << endl;
+
+    stringstream ss;
+    ss << "run_" << start << ".txt";
+    rename(ss.str().c_str(), output_name.c_str());
+
+    for (int i = 1; i < end; i++) {
+        stringstream ss;
+        ss << "run_" << i << ".txt";
+        cout << "Removing " << ss.str() << endl;
+        remove(ss.str().c_str());
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -153,13 +194,14 @@ int main(int argc, char* argv[]) {
     int runs_count = input(input_name, TOTAL_MEM);
 
     merge(runs_count, output_name);
+    // cout << runs_count << endl;
 
-    for (int i = 1; i <= runs_count; i++) {
-        stringstream ss;
-        ss << "run_" << i << ".txt";
-        cout << "Removing " << ss.str() << endl;
-        remove(ss.str().c_str());
-    }
+    // for (int i = 1; i <= runs_count; i++) {
+    //     stringstream ss;
+    //     ss << "run_" << i << ".txt";
+    //     cout << "Removing " << ss.str() << endl;
+    //     remove(ss.str().c_str());
+    // }
 
     cout << "Entire process took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
     return 0;
