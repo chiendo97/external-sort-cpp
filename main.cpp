@@ -26,20 +26,28 @@ int input(string input_name, int TOTAL_MEM) {
     ifstream input; 
     input.open(input_name.c_str());
 
+    if (!input.good()) {
+        cout << "File input is not found!" << endl << "Exit program!" << endl;
+        exit(-1);
+    }
+
     int input_size; 
     input.seekg(0, input.end);
     input_size = input.tellg();
     input.seekg(0, input.beg);
+    cout << "-------------------------------------------------------\n";
     cout << "The size of the file chosen is (in bytes): " << input_size << endl;
 
     int run_count = 0;
     int total_mem_so_far = 0;
 
     ofstream output;
-    vector<string> data;
+    vector<string> data; data.clear();
 
     cout << "File " << input_name << " is being read!" << endl;
+    cout << "-------------------------------------------------------\n\n\n";
 
+    cout << "-------------------------------------------------------\n";
     while (!input.eof()) {
         string sentence;
         getline(input, sentence);
@@ -53,7 +61,6 @@ int input(string input_name, int TOTAL_MEM) {
             stringstream ss;
             ss << "run_" << run_count << ".txt";
             cout << "Writing " << ss.str() << endl;
-            // cout << "Entire process so far took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
             output.open(ss.str());
 
             int data_size = data.size();
@@ -61,9 +68,11 @@ int input(string input_name, int TOTAL_MEM) {
                 output << data[i];
                 output << endl;
             }
-            output << data[data_size-1];
-            output.close();
 
+            if (data_size > 0) {
+                output << data[data_size-1];
+            }
+            output.close();
             data.clear();
             total_mem_so_far = sentence.size();
             data.push_back(sentence);
@@ -79,7 +88,6 @@ int input(string input_name, int TOTAL_MEM) {
         stringstream ss;
         ss << "run_" << run_count << ".txt";
         cout << "Writing " << ss.str() << endl;
-        // cout << "Entire process so far took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
         output.open(ss.str());
 
         int data_size = data.size();
@@ -92,8 +100,11 @@ int input(string input_name, int TOTAL_MEM) {
         output.close();
     }
 
-    cout << "Entire process so far took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
+    
     cout << "Read input is done!" << endl;
+    cout << "Entire process so far took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
+    cout << "-------------------------------------------------------\n\n\n";
+
     return run_count;
 }
 
@@ -127,7 +138,8 @@ void merge(int start, int end, int location) {
         }
     }
 
-    cout << endl << "Starting merge from " << start << " to " << end << " into " << location << endl;
+    cout << "-------------------------------------------------------\n";
+    cout << endl << "Merging from run_" << start << " to run_" << end << " into run_" << location << " file" << endl;
 
     while (!heap.empty()) {
         string sentence = heap.top().sentence; 
@@ -143,7 +155,8 @@ void merge(int start, int end, int location) {
         }
     }
 
-    cout << "Merging stoped!" << endl << endl;
+    cout << "Merge done!" << endl << endl;
+    cout << "-------------------------------------------------------\n\n\n";
 
     for (int i = 0; i < runs_count; i++) {
         input[i].close();
@@ -153,11 +166,21 @@ void merge(int start, int end, int location) {
 }
 
 void merge(int runs_count, string output_name) {
-    const int distance = 100;
+
+    cout << "-------------------------------------------------------\n";
+	cout << "Merging " << runs_count << " files into output (" << output_name << " file)" << endl;
+	cout << "-------------------------------------------------------\n\n\n";
+
+    //int distance = 100;
     int start = 1;
     int end = runs_count;
     while (start < end) {
         int location = end;
+        int distance = 100;
+        int time = (end - start + 1) / distance + 1;
+        if ((end - start + 1) / time < distance) {
+            distance = (end - start + 1) / time + 1;
+        }
         while (start <= end) {
             int mid = min(start + distance, end);
             location++;
@@ -167,25 +190,31 @@ void merge(int runs_count, string output_name) {
         end = location;
     }
 
-    // cout << start << ' ' << end << endl;
-
     stringstream ss;
     ss << "run_" << start << ".txt";
     rename(ss.str().c_str(), output_name.c_str());
 
+    
+    cout << "-------------------------------------------------------\n";
+    cout << "Removing chucks files!" << endl;
     for (int i = 1; i < end; i++) {
         stringstream ss;
         ss << "run_" << i << ".txt";
         cout << "Removing " << ss.str() << endl;
         remove(ss.str().c_str());
     }
+    cout << "-------------------------------------------------------\n\n\n";
 }
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        cout << "Not enough parameters!" << endl;
+        cout << "input_file output_file mem_size" << endl << "Exit program!" << endl;
         return 0;
     }
+
+    cout << "-------------------------------------------------------\n";
+	cout << "Welcome to Chiendo97's External Sort Program!\n";
+	cout << "-------------------------------------------------------\n\n\n";
 
     string input_name = argv[1];
     string output_name = argv[2];
@@ -194,15 +223,7 @@ int main(int argc, char* argv[]) {
     int runs_count = input(input_name, TOTAL_MEM);
 
     merge(runs_count, output_name);
-    // cout << runs_count << endl;
-
-    // for (int i = 1; i <= runs_count; i++) {
-    //     stringstream ss;
-    //     ss << "run_" << i << ".txt";
-    //     cout << "Removing " << ss.str() << endl;
-    //     remove(ss.str().c_str());
-    // }
-
+    
     cout << "Entire process took a total of: " << float(clock() - begin_time) / CLOCKS_PER_SEC * 1000 << " msec." << endl;
     return 0;
 }

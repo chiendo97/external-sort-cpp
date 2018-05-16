@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
             sentence_size = 1 + rand() % size_each_sentence;
         }
         for (int i = 0; i < sentence_size; i++) {
+            letter = ' ' + rand() % 94;
             letter = 'a' + rand() % 26;
             output << letter;
         }
