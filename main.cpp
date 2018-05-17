@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
 
     string input_name = argv[1];
     string output_name = argv[2];
-    int TOTAL_MEM = strtol(argv[3], nullptr, 0);
+    int TOTAL_MEM = strtol(argv[3], nullptr, 0); // bytes 
     
     int runs_count = input(input_name, TOTAL_MEM);
 
